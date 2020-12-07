@@ -1,0 +1,142 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# library
+
+```{r}
+
+library(tidyverse)
+library(ggridges)
+library(magrittr)
+```
+# data import 
+
+```{r}
+setwd("/Users/mm/Google Drive (xerroxcopy@gmail.com)/[G112]Pentagon/big-five-personality-test")
+data_raw <- read_tsv("input2/data.csv")
+
+View(data_raw)
+head(data_raw)
+negative <- function(x) -x
+minusthree <- function(x) x-3
+data <- 
+  data_raw %>% 
+  mutate_at(vars(`E1`:`O3`), minusthree) %>% 
+  mutate_at(vars(`E1`:`O3`), ~ifelse(. == -3, NA, .)) %>% 
+  mutate_at(c('E2', 'E4', 'E6', 'E6', 'E8', 'N2', 'N4', 'A1', 'A3', 'A5', 'A7', 'C2', 'C4', 'C6', 'C8', 'O2', 'O4', 'O6'), negative) %>%  # https://www.kaggle.com/petarluketina/big-five-personality-traits
+  rowwise() %>% 
+  mutate(
+    E = sum(c_across(`E1`:`E10`)),
+    N = sum(c_across(`N1`:`N10`)),
+    A = sum(c_across(`A1`:`A10`)),
+    C = sum(c_across(`C1`:`C10`)),
+    O = sum(c_across(`O1`:`O10`)),
+         ) %>% 
+  select(race, age, gender, country, E, N, A, C, O)
+
+```
+
+# inspect
+
+## age
+
+age 999999 was possible so omitting ppl with age > 100 (some typed like 1992...)
+
+```{r}
+
+data %>% 
+  filter(age < 100) %>% 
+  ggplot(aes(x = age, group = gender, color = gender)) +
+  geom_density()
+```
+
+```{r}
+data %>% 
+  filter(age < 100) %>% 
+  ggplot(aes(x = gender)) + 
+  geom_histogram()
+
+```
+most participants answered 1=male or 2=female. 0=missing, 3=other.
+```{r}
+df <- data %>%  #19,719
+  filter(age < 100) %>% 
+  filter(gender %in% c(1, 2)) %>%  # 19,514
+  mutate(gender = recode(gender, `1` = "Male", `2` = "Female")) %>% 
+  pivot_longer(cols = c("E", "N", "A", "C", "O"), names_to="bigfive", values_to="value") 
+
+```
+
+## country
+
+```{r  fig.width=10, fig.height=20}
+df %>% 
+  ggplot(aes(x = value, y = country, group = country, color = country)) +
+  # geom_count() +
+  geom_density_ridges() 
+  # facet_grid(cols = vars(bigfive))
+```
+
+
+# plot 
+
+
+
+```{r fig.width=5, fig.height=2.5}
+df %>% 
+  filter(age < 80) %>% 
+  ggplot(aes(x = age, y = value)) +
+  geom_count(aes(fill= value)) +
+  scale_size_area() +
+    scale_fill_viridis_c( ) +
+
+  geom_smooth(aes(color = gender), fill = "grey70") +
+  facet_grid(cols = vars(bigfive)) +
+  theme_linedraw() +
+  theme(legend.position = "none")
+
+ggsave("output/plot/all_age-value~gender.png", width=19.20/3, height=9/3, unit="in", dpi=300)
+
+```
+### agreeableness
+
+```{r}
+df %>% 
+  filter(age < 80) %>% 
+  filter(bigfive == "A") %>% 
+  ggplot(aes(x = age, y = value, color = value)) +
+  scale_color_viridis_c( ) +
+  geom_count(alpha = 0.3) +
+  scale_size_area() +
+  # geom_density_2d_filled(alpha = 0.5) +
+  geom_smooth(color = "black", fill = "grey70") +
+  facet_grid(cols = vars(gender)) +
+  theme_linedraw() +
+  theme(legend.position = "none")
+
+ggsave("output/plot/A_age-value~gender.png", width=19.20/3, height=9/3, unit="in", dpi=300)
+```
+
+
+
+### stability
+
+```{r}
+df %>% 
+  filter(age < 80) %>% 
+  filter(bigfive == "N") %>% 
+  ggplot(aes(x = age, y = -value, color = value)) +
+  scale_color_viridis_c( ) +
+  geom_count(alpha = 0.3) +
+  scale_size_area() +
+  # geom_density_2d_filled(alpha = 0.5) +
+  geom_smooth(color = "black", fill = "grey70") +
+  facet_grid(cols = vars(gender)) +
+  theme_linedraw() +
+  theme(legend.position = "none")
+
+ggsave("output/plot/S_age-value~gender.png", width=19.20/3, height=9/3, unit="in", dpi=300)
+```
+
