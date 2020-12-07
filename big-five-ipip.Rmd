@@ -32,16 +32,20 @@ df3 <- data_raw3 %>%
 ```{r}
 df3 %>% 
   filter(age < 80) %>% 
-  ggplot(aes(x = age, y = value, color = sex)) +
-  
-  scale_color_viridis_c( ) +
-  geom_count(alpha = 0.3) +
-  scale_size_area() +
-  geom_smooth(color = "black", fill = "grey70") +
+  ggplot(aes(x = age, y = value)) +
+  stat_density_2d(
+    geom = "raster",
+    aes(fill = after_stat(density)),
+    contour = FALSE
+  ) +
+  scale_fill_viridis_c() +
+  geom_smooth(aes(color = sex)) +
+  scale_color_manual(values = c("black", "blue")) +
   facet_grid(cols = vars(bigfive))+
   theme_linedraw() +
+  scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
   theme(legend.position = "none")
 
-ggsave("output/plot/all_IPIP_age-value~gender.png", width=19.20/3, height=9/3, unit="in", dpi=300)
+ggsave("output/plot/all_IPIP_age-value~gender.png", width=25/3, height=7/3, unit="in", dpi=600)
 ```
 
