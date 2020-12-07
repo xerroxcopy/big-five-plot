@@ -1,0 +1,47 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# data 
+
+IPIP
+
+https://github.com/automoto/big-five-data/blob/master/big_five_scores.csv
+
+
+```{r}
+
+library(tidyverse)
+library(ggridges)
+library(magrittr)
+```
+# data import 
+
+```{r}
+setwd("/Users/mm/Google Drive (xerroxcopy@gmail.com)/[G112]Pentagon/big-five-personality-test")
+data_raw3 <- read_csv("input3/big_five_scores.csv")
+View(data_raw3)
+df3 <- data_raw3 %>% 
+  pivot_longer(cols = ends_with("score"), names_to = "bigfive", values_to = "value") %>% 
+  mutate(sex = recode(sex, `1` = "Male", `2` = "Female"))
+```
+
+# plot
+
+```{r}
+df3 %>% 
+  filter(age < 80) %>% 
+  ggplot(aes(x = age, y = value, color = sex)) +
+  
+  scale_color_viridis_c( ) +
+  geom_count(alpha = 0.3) +
+  scale_size_area() +
+  geom_smooth(color = "black", fill = "grey70") +
+  facet_grid(cols = vars(bigfive))+
+  theme_linedraw() +
+  theme(legend.position = "none")
+
+ggsave("output/plot/all_IPIP_age-value~gender.png", width=19.20/3, height=9/3, unit="in", dpi=300)
+```
+

@@ -25,7 +25,7 @@ data <-
   data_raw %>% 
   mutate_at(vars(`E1`:`O3`), minusthree) %>% 
   mutate_at(vars(`E1`:`O3`), ~ifelse(. == -3, NA, .)) %>% 
-  mutate_at(c('E2', 'E4', 'E6', 'E6', 'E8', 'N2', 'N4', 'A1', 'A3', 'A5', 'A7', 'C2', 'C4', 'C6', 'C8', 'O2', 'O4', 'O6'), negative) %>%  # https://www.kaggle.com/petarluketina/big-five-personality-traits
+  mutate_at(c('E2', 'E4', 'E6', 'E8', 'E10', 'N2', 'N4', 'A1', 'A3', 'A5', 'A7', 'C2', 'C4', 'C6', 'C8', 'O2', 'O4', 'O6'), negative) %>%  # https://www.kaggle.com/petarluketina/big-five-personality-traits
   rowwise() %>% 
   mutate(
     E = sum(c_across(`E1`:`E10`)),
